@@ -8,8 +8,6 @@ import idl from '../../../anchor_project/counter-dapp/target/idl/counter.json'
 import { Counter } from '../../../anchor_project/counter-dapp/target/types/counter'
 import { TransactionMessage, VersionedTransaction } from '@solana/web3.js'
 
-const PROGRAM_ID = new web3.PublicKey((idl as any).address)
-
 interface CounterAccount {
   owner: web3.PublicKey
   count: BN
@@ -29,18 +27,21 @@ export default function Home() {
     return new AnchorProvider(connection, wallet as AnchorProvider['wallet'], {})
   }, [connection, wallet])
 
-  const getCounterPda = useCallback(() => {
-    if (!publicKey) throw new Error('Wallet not connected')
-    const [pda] = web3.PublicKey.findProgramAddressSync([Buffer.from('counter'), publicKey.toBuffer()], PROGRAM_ID)
-    console.log('Program id ?', PROGRAM_ID)
-    return pda
-  }, [publicKey])
-
   const program = useCallback(() => {
     const provider = getProvider()
     if (!provider) throw new Error('Wallet not connected')
     return new Program<Counter>(idl as Counter, provider)
   }, [getProvider])
+
+  const getCounterPda = useCallback(() => {
+    if (!publicKey) throw new Error('Wallet not connected')
+    const [pda] = web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('counter'), publicKey.toBuffer()],
+      program().programId,
+    )
+    console.log('Program id ?', program().programId)
+    return pda
+  }, [publicKey, program])
 
   const fetchCounter = useCallback(async () => {
     if (!publicKey) return
@@ -52,6 +53,13 @@ export default function Home() {
       setCounter(null)
     }
   }, [publicKey, program, getCounterPda])
+
+  /*useEffect(() => {
+    if (publicKey) {
+      const counterPda = getCounterPda()
+      console.log('Derived Counter PDA:', counterPda.toBase58())
+    }
+  }, [publicKey, getCounterPda])*/
 
   useEffect(() => {
     if (publicKey) {
@@ -76,7 +84,7 @@ export default function Home() {
       }).compileToV0Message()
       const tx = new VersionedTransaction(messageV0)
 
-      // Simulation
+      // TEST SIMULATION
       const simResult = await connection.simulateTransaction(tx, { sigVerify: false, commitment: 'processed' })
       console.log('Simulation result:', simResult)
       if (simResult.value.err) {
@@ -89,7 +97,7 @@ export default function Home() {
       await fetchCounter()
     } catch (error: any) {
       console.error('Error initializing counter:', error)
-      if (error.logs) console.log('Error logs:', error.logs) // Capture if available
+      if (error.logs) console.log('Error logs:', error.logs)
     } finally {
       setLoading(false)
     }

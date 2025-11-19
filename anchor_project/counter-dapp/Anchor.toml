@@ -13,7 +13,7 @@ counter_dapp = "MY3r8x1gJ9mnZTiWFWcvr3wThyCjLvvzNKsJ48ix9uW"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [workspace]
