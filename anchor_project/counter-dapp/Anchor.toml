@@ -6,11 +6,8 @@ components = ["rustfmt", "clippy"]
 resolution = true
 skip-lint = false
 
-[programs.localnet]
-counter_dapp = "GXsxdre1jBvjT1R4fEZxPumaHzf5TnrMRpFx1MVGz4QV"
-
 [programs.devnet]
-counter_dapp = "GXsxdre1jBvjT1R4fEZxPumaHzf5TnrMRpFx1MVGz4QV"
+counter_dapp = "MY3r8x1gJ9mnZTiWFWcvr3wThyCjLvvzNKsJ48ix9uW"
 
 [registry]
 url = "https://api.apr.dev"
