@@ -7,10 +7,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-counter_dapp = "HpRwVwXXWhmdUh2FGddxdgX6ebLWAWLp1Bbae2aoQruU"
+counter_dapp = "GXsxdre1jBvjT1R4fEZxPumaHzf5TnrMRpFx1MVGz4QV"
 
 [programs.devnet]
-counter_dapp = "HpRwVwXXWhmdUh2FGddxdgX6ebLWAWLp1Bbae2aoQruU"
+counter_dapp = "GXsxdre1jBvjT1R4fEZxPumaHzf5TnrMRpFx1MVGz4QV"
 
 [registry]
 url = "https://api.apr.dev"
