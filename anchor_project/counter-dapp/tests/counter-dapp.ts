@@ -94,7 +94,7 @@ describe("counter-dapp", () => {
     } catch (err: any) {
       didThrow = true;
 
-      console.log("Error structure:", JSON.stringify(err, null, 2));
+      //console.log("Error structure:", JSON.stringify(err, null, 2));
 
       if (err.error?.errorCode) {
         expect(err.error.errorCode.code).to.be.oneOf([

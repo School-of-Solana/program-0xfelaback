@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
@@ -5,8 +6,9 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { Program, AnchorProvider, web3, BN } from '@coral-xyz/anchor'
 import idl from '../../../anchor_project/counter-dapp/target/idl/counter.json'
 import { Counter } from '../../../anchor_project/counter-dapp/target/types/counter'
+import { TransactionMessage, VersionedTransaction } from '@solana/web3.js'
 
-const PROGRAM_ID = new web3.PublicKey('MY3r8x1gJ9mnZTiWFWcvr3wThyCjLvvzNKsJ48ix9uW')
+const PROGRAM_ID = new web3.PublicKey((idl as any).address)
 
 interface CounterAccount {
   owner: web3.PublicKey
@@ -30,6 +32,7 @@ export default function Home() {
   const getCounterPda = useCallback(() => {
     if (!publicKey) throw new Error('Wallet not connected')
     const [pda] = web3.PublicKey.findProgramAddressSync([Buffer.from('counter'), publicKey.toBuffer()], PROGRAM_ID)
+    console.log('Program id ?', PROGRAM_ID)
     return pda
   }, [publicKey])
 
@@ -61,20 +64,32 @@ export default function Home() {
     setLoading(true)
     try {
       const counterPda = getCounterPda()
-      const tx = await program()
+      const instruction = await program()
         .methods.initialize()
         .accountsPartial({ counter: counterPda, user: publicKey })
-        .transaction()
+        .instruction()
+      const blockhash = (await connection.getLatestBlockhash()).blockhash
+      const messageV0 = new TransactionMessage({
+        payerKey: publicKey,
+        recentBlockhash: blockhash,
+        instructions: [instruction],
+      }).compileToV0Message()
+      const tx = new VersionedTransaction(messageV0)
 
-      const { blockhash } = await connection.getLatestBlockhash()
-      tx.recentBlockhash = blockhash
-      tx.feePayer = publicKey
+      // Simulation
+      const simResult = await connection.simulateTransaction(tx, { sigVerify: false, commitment: 'processed' })
+      console.log('Simulation result:', simResult)
+      if (simResult.value.err) {
+        console.log('Simulation logs:', simResult.value.logs)
+        throw new Error(`Simulation failed: ${JSON.stringify(simResult.value.err)}`)
+      }
 
       const txSig = await sendTransaction(tx, connection)
       await connection.confirmTransaction(txSig)
       await fetchCounter()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error initializing counter:', error)
+      if (error.logs) console.log('Error logs:', error.logs) // Capture if available
     } finally {
       setLoading(false)
     }
@@ -85,15 +100,17 @@ export default function Home() {
     setLoading(true)
     try {
       const counterPda = getCounterPda()
-      const tx = await program()
+      const instruction = await program()
         .methods.increment()
         .accountsPartial({ counter: counterPda, user: publicKey })
-        .transaction()
-
-      const { blockhash } = await connection.getLatestBlockhash()
-      tx.recentBlockhash = blockhash
-      tx.feePayer = publicKey
-
+        .instruction()
+      const blockhash = (await connection.getLatestBlockhash()).blockhash
+      const messageV0 = new TransactionMessage({
+        payerKey: publicKey,
+        recentBlockhash: blockhash,
+        instructions: [instruction],
+      }).compileToV0Message()
+      const tx = new VersionedTransaction(messageV0)
       const txSig = await sendTransaction(tx, connection)
       await connection.confirmTransaction(txSig)
       await fetchCounter()
@@ -109,12 +126,17 @@ export default function Home() {
     setLoading(true)
     try {
       const counterPda = getCounterPda()
-      const tx = await program().methods.reset().accountsPartial({ counter: counterPda, user: publicKey }).transaction()
-
-      const { blockhash } = await connection.getLatestBlockhash()
-      tx.recentBlockhash = blockhash
-      tx.feePayer = publicKey
-
+      const instruction = await program()
+        .methods.reset()
+        .accountsPartial({ counter: counterPda, user: publicKey })
+        .instruction()
+      const blockhash = (await connection.getLatestBlockhash()).blockhash
+      const messageV0 = new TransactionMessage({
+        payerKey: publicKey,
+        recentBlockhash: blockhash,
+        instructions: [instruction],
+      }).compileToV0Message()
+      const tx = new VersionedTransaction(messageV0)
       const txSig = await sendTransaction(tx, connection)
       await connection.confirmTransaction(txSig)
       await fetchCounter()
