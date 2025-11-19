@@ -1,6 +1,6 @@
 # Project Description
 
-**Deployed Frontend URL:** https://x.com
+**Deployed Frontend URL:** https://localhost:3000.com
 
 **Solana Program ID:** MY3r8x1gJ9mnZTiWFWcvr3wThyCjLvvzNKsJ48ix9uW
 
