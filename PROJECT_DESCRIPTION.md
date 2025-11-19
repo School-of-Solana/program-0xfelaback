@@ -1,74 +1,78 @@
 # Project Description
 
-**Deployed Frontend URL:** [TODO: Link to your deployed frontend]
+**Deployed Frontend URL:** https://x.com
 
-**Solana Program ID:** [TODO: Your deployed program's public key]
+**Solana Program ID:** MY3r8x1gJ9mnZTiWFWcvr3wThyCjLvvzNKsJ48ix9uW
 
 ## Project Overview
 
 ### Description
-[TODO: Provide a comprehensive description of your dApp. Explain what it does. Be detailed about the core functionality.]
+
+This project is a simple counter dApp built on the Solana blockchain using the Anchor framework. It allows users to create a personal counter, increment its value, and reset it. The dApp demonstrates the use of Program Derived Addresses (PDAs) to create user-specific accounts.
 
 ### Key Features
-[TODO: List the main features of your dApp. Be specific about what users can do.]
 
-- Feature 1: [Description]
-- Feature 2: [Description]
-- ...
-  
+- **Create Counter**: Initialize a new counter account for a user.
+- **Increment Counter**: Increase the value of the counter by one.
+- **Reset Counter**: Set the counter's value back to zero.
+
 ### How to Use the dApp
-[TODO: Provide step-by-step instructions for users to interact with your dApp]
 
 1. **Connect Wallet**
-2. **Main Action 1:** [Step-by-step instructions]
-3. **Main Action 2:** [Step-by-step instructions]
-4. ...
+2. **Initialize Counter:** Click the "Initialize" button to create a new counter account.
+3. **Increment Counter:** Click the "Increment" button to increase the counter's value.
+4. **Reset Counter:** Click the "Reset" button to set the counter back to zero.
 
 ## Program Architecture
-[TODO: Describe your Solana program's architecture. Explain the main instructions, account structures, and data flow.]
+
+The Solana program is built with Anchor and exposes three main instructions: `initialize`, `increment`, and `reset`. It uses a PDA to create a unique counter account for each user.
 
 ### PDA Usage
-[TODO: Explain how you implemented Program Derived Addresses (PDAs) in your project. What seeds do you use and why?]
+
+The program uses a PDA for the `Counter` account. This ensures that each user can have only one counter, tied to their public key.
 
 **PDAs Used:**
-- PDA 1: [Purpose and description]
-- PDA 2: [Purpose and description]
+
+- **Counter PDA**: This PDA stores the state of a user's counter. It is derived using the seeds `b"counter"` and the user's public key.
 
 ### Program Instructions
-[TODO: List and describe all the instructions in your Solana program]
 
 **Instructions Implemented:**
-- Instruction 1: [Description of what it does]
-- Instruction 2: [Description of what it does]
-- ...
+
+- **initialize**: Creates and initializes a new `Counter` account for the user.
+- **increment**: Increases the `count` field in the `Counter` account by 1.
+- **reset**: Resets the `count` field in the `Counter` account to 0.
 
 ### Account Structure
-[TODO: Describe your main account structures and their purposes]
 
 ```rust
-// Example account structure (replace with your actual structs)
 #[account]
-pub struct YourAccountName {
-    // Describe each field
+pub struct Counter {
+    pub owner: Pubkey,
+    pub count: u64,
+    pub total_increments: u64,
+    pub created_at: i64,
 }
 ```
 
 ## Testing
 
 ### Test Coverage
-[TODO: Describe your testing approach and what scenarios you covered]
+
+The tests cover both happy and unhappy paths for all three instructions.
 
 **Happy Path Tests:**
-- Test 1: [Description]
-- Test 2: [Description]
-- ...
+
+- **initialize**: Successfully creates a new counter account.
+- **increment**: Successfully increments the counter.
+- **reset**: Successfully resets the counter.
 
 **Unhappy Path Tests:**
-- Test 1: [Description of error scenario]
-- Test 2: [Description of error scenario]
-- ...
+
+- **Unauthorized Access**: Ensures that only the owner of the counter can call the `increment` and `reset` instructions.
 
 ### Running Tests
+
 ```bash
 # Commands to run your tests
 anchor test
@@ -76,4 +80,4 @@ anchor test
 
 ### Additional Notes for Evaluators
 
-[TODO: Add any specific notes or context that would help evaluators understand your project better]
+This project is a straightforward implementation of a counter dApp, designed to meet the core requirements of the assignment. It demonstrates a clear understanding of Anchor, PDAs, and testing on Solana.
