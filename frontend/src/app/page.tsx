@@ -1,7 +1,5 @@
-//import DashboardFeature from '@/features/dashboard/dashboard-feature'
 'use client'
-
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { Program, AnchorProvider, web3, BN } from '@coral-xyz/anchor'
@@ -24,23 +22,24 @@ export default function Home() {
   const [counter, setCounter] = useState<CounterAccount | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const getProvider = () => {
+  const getProvider = useCallback(() => {
     if (!wallet || !connection) return null
     return new AnchorProvider(connection, wallet as AnchorProvider['wallet'], {})
-  }
+  }, [connection, wallet])
 
-  const getCounterPda = () => {
+  const getCounterPda = useCallback(() => {
     if (!publicKey) throw new Error('Wallet not connected')
     const [pda] = web3.PublicKey.findProgramAddressSync([Buffer.from('counter'), publicKey.toBuffer()], PROGRAM_ID)
     return pda
-  }
+  }, [publicKey])
 
-  const program = () => {
+  const program = useCallback(() => {
     const provider = getProvider()
     if (!provider) throw new Error('Wallet not connected')
     return new Program<Counter>(idl as Counter, provider)
-  }
-  const fetchCounter = async () => {
+  }, [getProvider])
+
+  const fetchCounter = useCallback(async () => {
     if (!publicKey) return
     const counterPda = getCounterPda()
     try {
@@ -49,16 +48,28 @@ export default function Home() {
     } catch {
       setCounter(null)
     }
-  }
+  }, [publicKey, program, getCounterPda])
+
+  useEffect(() => {
+    if (publicKey) {
+      fetchCounter()
+    }
+  }, [publicKey, fetchCounter])
 
   const initialize = async () => {
+    if (!publicKey) return
+    setLoading(true)
     try {
-      setLoading(true)
       const counterPda = getCounterPda()
       const tx = await program()
         .methods.initialize()
-        .accountsPartial({ counter: counterPda, user: publicKey! })
+        .accountsPartial({ counter: counterPda, user: publicKey })
         .transaction()
+
+      const { blockhash } = await connection.getLatestBlockhash()
+      tx.recentBlockhash = blockhash
+      tx.feePayer = publicKey
+
       const txSig = await sendTransaction(tx, connection)
       await connection.confirmTransaction(txSig)
       await fetchCounter()
@@ -70,26 +81,48 @@ export default function Home() {
   }
 
   const increment = async () => {
+    if (!publicKey) return
     setLoading(true)
-    const counterPda = getCounterPda()
-    const tx = await program()
-      .methods.increment()
-      .accountsPartial({ counter: counterPda, user: publicKey! })
-      .transaction()
-    const txSig = await sendTransaction(tx, connection)
-    await connection.confirmTransaction(txSig)
-    fetchCounter()
-    setLoading(false)
+    try {
+      const counterPda = getCounterPda()
+      const tx = await program()
+        .methods.increment()
+        .accountsPartial({ counter: counterPda, user: publicKey })
+        .transaction()
+
+      const { blockhash } = await connection.getLatestBlockhash()
+      tx.recentBlockhash = blockhash
+      tx.feePayer = publicKey
+
+      const txSig = await sendTransaction(tx, connection)
+      await connection.confirmTransaction(txSig)
+      await fetchCounter()
+    } catch (error) {
+      console.error('Error incrementing counter:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const reset = async () => {
+    if (!publicKey) return
     setLoading(true)
-    const counterPda = getCounterPda()
-    const tx = await program().methods.reset().accountsPartial({ counter: counterPda, user: publicKey! }).transaction()
-    const txSig = await sendTransaction(tx, connection)
-    await connection.confirmTransaction(txSig)
-    fetchCounter()
-    setLoading(false)
+    try {
+      const counterPda = getCounterPda()
+      const tx = await program().methods.reset().accountsPartial({ counter: counterPda, user: publicKey }).transaction()
+
+      const { blockhash } = await connection.getLatestBlockhash()
+      tx.recentBlockhash = blockhash
+      tx.feePayer = publicKey
+
+      const txSig = await sendTransaction(tx, connection)
+      await connection.confirmTransaction(txSig)
+      await fetchCounter()
+    } catch (error) {
+      console.error('Error resetting counter:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -99,7 +132,6 @@ export default function Home() {
           <h1 className="text-4xl font-bold">Solana Counter dApp</h1>
           <WalletMultiButton />
         </div>
-
         {!publicKey ? (
           <p className="text-center text-xl">Connect your wallet to start counting!</p>
         ) : (
@@ -107,7 +139,6 @@ export default function Home() {
             <button onClick={fetchCounter} className="text-sm text-gray-400 underline">
               Refresh
             </button>
-
             {counter === null ? (
               <button
                 onClick={initialize}
@@ -122,7 +153,6 @@ export default function Home() {
                   <p className="text-6xl font-bold">{counter.count.toString()}</p>
                   <p className="text-gray-400 mt-2">Total increments: {counter.totalIncrements.toString()}</p>
                 </div>
-
                 <div className="flex gap-4">
                   <button
                     onClick={increment}
