@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { Program, AnchorProvider, web3, BN } from '@coral-xyz/anchor'
-import idl from '../../../anchor_project/counter-dapp/target/idl/counter.json'
+import idl from './counter.json'
 import { Counter } from '../../../anchor_project/counter-dapp/target/types/counter'
 import { TransactionMessage, VersionedTransaction } from '@solana/web3.js'
 
