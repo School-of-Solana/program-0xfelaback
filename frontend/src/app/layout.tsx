@@ -3,7 +3,7 @@ import './globals.css'
 import { AppProviders } from '@/components/app-providers'
 import { AppLayout } from '@/components/app-layout'
 import React from 'react'
-import { WalletContextProvider } from '../components/WalletContextProvider'
+import AppWalletProvider from '../components/WalletContextProvider'
 
 export const metadata: Metadata = {
   title: 'Client',
@@ -22,9 +22,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning>
       <body className={`antialiased`}>
         <AppProviders>
-          <WalletContextProvider>
+          <AppWalletProvider>
             <AppLayout links={links}>{children}</AppLayout>
-          </WalletContextProvider>
+          </AppWalletProvider>
         </AppProviders>
       </body>
     </html>
